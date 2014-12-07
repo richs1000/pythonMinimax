@@ -25,7 +25,6 @@ class Board(object):
         # start with an empty board
         self.board = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
 
-
     def makeMove(self, letter, move):
         """
         Make sure a move is legal and then do it.
@@ -35,6 +34,14 @@ class Board(object):
             # set the value of board to the player's letter
             self.board[move] = letter
 
+    def clearSquare(self, square):
+        """
+        Make a square empty - I use this to "undo" a move
+        """
+        # make sure square is in bounds
+        if square in range(0, 9):
+            # set the value of board to the player's letter
+            self.board[square] = ' '
 
     def drawBoard(self):
         # Pretty-print the board.
@@ -50,7 +57,6 @@ class Board(object):
         print(' ' + self.board[6] + ' | ' + self.board[7] + ' | ' + self.board[8])
         print('   |   |')
 
-
     def isWinner(self, le):
         # Given a player's letter, this function returns True if that player has won.
         # We use bo instead of board and le instead of letter so we don't have to type as much.
@@ -65,13 +71,11 @@ class Board(object):
             (bo[0] == le and bo[4] == le and bo[8] == le) or # diagonal
             (bo[2] == le and bo[4] == le and bo[6] == le)) # diagonal
 
-
     def isSpaceFree(self, move):
         # make sure move is in bounds
         if move in range(0, 9):
             # Return true if the square is free on the board.
             return self.board[move] == ' '
-
 
     def isBoardFull(self):
         """
@@ -86,56 +90,16 @@ class Board(object):
         # all the squares have an X or O in them
         return True
 
-
-    def switchPlayer(self, player):
-        """
-        Alternate between the two players
-        """
-        # if player one just went...
-        if (player is self.p1):
-            # switch to player two
-            return self.p2
-        # otherwise, player two just went...
-        else:
-            # so switch to player one
-            return self.p1
-
-
-    def play(self):
-        """
-        This function runs the actual game. It loops until someone wins or we get a draw
-        """
-        # start with player 1
-        player = self.p1
-        # loop until we get a win or a draw
-        while (True):
-            # display the board
-            self.drawBoard()
-            # say which player goes next
-            print("Your move, " + player.name)
-            # get the player's move
-            move = player.move(self.board)
-            # perform the player's move
-            self.makeMove(player.name, move)
-            # if we have a winner...
-            if self.isWinner(player.name):
-                # display the board
-                self.drawBoard()
-                # say who won
-                print(player.name + " won!")
-                # break out of the loop
-                break
-            # if the board is full, then it's a draw
-            elif self.isBoardFull():
-                # display the board
-                self.drawBoard()
-                # say we have a tie
-                print('The game is a tie!')
-                # break out of the loop
-                break
-            # otherwise, switch players and repeat
-            else:
-                player = self.switchPlayer(player)
+    def possibleNextMoves(self):
+        # start with an empty list of possible next moves
+        possibleMoves = []
+        # find all the empty squares
+        for i in range(0,9):
+        # if a square hasn't already been filled with an X or an 0
+            if self.isSpaceFree(i):
+            # add it to the list of possible moves
+                possibleMoves.append(i)
+        return possibleMoves
 
 
 class Player():
@@ -148,18 +112,12 @@ class Player():
         else:
             self.opponent = 'X'
 
-    def isSpaceFree(self, board, move):
-        # make sure move is in bounds
-        if move in range(0, 9):
-            # Return true if the passed move is free on the passed board.
-            return board[move] == ' '
-
     def move(self, board):
         # Let the player type in his move.
         move = -1
         # keep seeking input until we get an integer between 0 and 8 that corresponds to
         # an empty square on the board
-        while (int(move) not in range(0, 9)) or (not self.isSpaceFree(board, int(move))):
+        while (int(move) not in range(0, 9)) or (not board.isSpaceFree(int(move))):
             # get input from keyboard
             move = int(raw_input("Choose a square: "))
         # return the move
@@ -176,133 +134,167 @@ class Machine(Player):
         Given a list of potential moves, pick one at random and return it
         """
         # pick a move randomly
-        moveIndex = random.randint(0, len(moves))
+        moveIndex = random.randint(0, len(moves) - 1)
         # send it back
         return moves[moveIndex]
 
-    def isWinner(self, bo, le):
-        # Given a board and a player's letter, this function returns True if that player has won.
-        # We use bo instead of board and le instead of letter so we don't have to type as much.
-        return (
-            (bo[0] == le and bo[1] == le and bo[2] == le) or # across the top
-            (bo[3] == le and bo[4] == le and bo[5] == le) or # across the middle
-            (bo[6] == le and bo[7] == le and bo[8] == le) or # across the bottom
-            (bo[0] == le and bo[3] == le and bo[6] == le) or # down the left side
-            (bo[1] == le and bo[4] == le and bo[7] == le) or # down the middle
-            (bo[2] == le and bo[5] == le and bo[8] == le) or # down the right side
-            (bo[0] == le and bo[4] == le and bo[8] == le) or # diagonal
-            (bo[2] == le and bo[4] == le and bo[6] == le)) # diagonal
-
-    def possibleNextMoves(self, board):
-        # start with an empty list of possible next moves
-        possibleMoves = []
-        # find all the empty squares
-        for i in range(0,9):
-        # if a square hasn't already been filled with an X or an 0
-            if self.isSpaceFree(board, i):
-            # add it to the list of possible moves
-                possibleMoves.append(i)
-        return possibleMoves
-
-
-    def boardFull(self, board):
-        for i in range(0, 9):
-            if board[i] != 'X' and board[i] != 'O':
-                return False
-        return True
-
-
     def fullMinimax(self, board, player):
-        if self.isWinner(board, self.name):
+        """
+        This function implements a minimax search that always goes to the very end
+        of the search tree. Only useful for games that don't have big search trees.
+        The function always returns a tuple: (<move>, <value>). <move> only matters
+        for the top node in the search tree, when the function is sending back which
+        move to make to the game.
+        """
+        # Yay, we won!
+        if board.isWinner(self.name):
+            # Return a positive number
             return (1, 1)
-        elif self.isWinner(board, self.opponent):
+        # Darn, we lost!
+        elif board.isWinner(self.opponent):
+            # Return a negative number
             return (-1, -1)
-        # if it's a draw, return the move and the value 0
-        elif (self.boardFull(board)):
+        # if it's a draw,
+        elif (board.isBoardFull()):
+            # return the value 0
             return (0, 0)
         # get all open spaces
-        possibleMoves = self.possibleNextMoves(board)
+        possibleMoves = board.possibleNextMoves()
         # are we considering our move or our opponent's move
         if self.name == player:
-            # if it's our move, we want to find a high number, so initialize this to low
+            # if it's our move, we want to find the move with the highest number, so start with low numbers
             bestMove = -1
             bestScore = -1000
-            # if I go next, return the highest value of my child nodes
+            # loop through all possible moves
             for m in possibleMoves:
-                copy = board[:]
-                copy[m] = player
-                minimax = self.fullMinimax(copy, self.opponent)
+                # make the move
+                board.makeMove(player, m)
+                # get the minimax vaue of the resulting state
+                minimax = self.fullMinimax(board, self.opponent)
+                # is this move better than any other moves we found?
                 if bestScore < minimax[1]:
+                    # save the move...
                     bestMove = m
+                    # and its score
                     bestScore = minimax[1]
+                # undo the move
+                board.clearSquare(m)
         else:
-        # if it's our opponent's move, we want to find a low number, so initialize this high
+        # if it's our opponent's move, we want to find a low number, so start with big numbers
             bestMove = -1
             bestScore = 1000
-            # if my opponent goes next, return the lowest value of my child nodes
-            # if I go next, return the highest value of my child nodes
+            # consider all possible moves
             for m in possibleMoves:
-                copy = board[:]
-                copy[m] = player
-                minimax = self.fullMinimax(copy, self.name)
+                # make the move
+                board.makeMove(player, m)
+                # get the minimax vaue of the resulting state
+                minimax = self.fullMinimax(board, self.name)
+                # is this better (for our opponent) than any other moves we found?
                 if bestScore > minimax[1]:
+                    # save the move...
                     bestMove = m
+                    # and its score
                     bestScore = minimax[1]
+                # undo the move
+                board.clearSquare(m)
+        # return the best move and best score we found for this state
         return (bestMove, bestScore)
 
     def kindOfSmart(self, board):
         # get all open spaces
-        possibleMoves = self.possibleNextMoves(board)
+        possibleMoves = board.possibleNextMoves()
         # First, check if we can win in the next move
         for i in possibleMoves:
-            copy = board[:]
-            if self.isSpaceFree(copy, i):
-                copy[i] = self.name
-                if self.isWinner(copy, self.name):
-                    return i
+            board.makeMove(self.name, i)
+            if board.isWinner(self.name):
+                return i
             else:
-                copy[i] = ' '
+                board.clearSquare(i)
         # Check if the player could win on his next move, and block them.
         for i in possibleMoves:
-            copy = board[:]
-            if self.isSpaceFree(copy, i):
-                copy[i] = self.opponent
-                if self.isWinner(copy, self.opponent):
-                    return i
-                else:
-                    copy[i] = ' '
+            board.makeMove(self.opponent, i)
+            if board.isWinner(self.opponent):
+                return i
+            else:
+                board.clearSquare(i)
         # Try to take the center, if it is free.
-        if self.isSpaceFree(board, 4):
+        if board.isSpaceFree(4):
             return 4
         # Try to take one of the corners, if they are free.
         corners = [0, 2, 6, 8]
         for corner in corners:
-            if self.isSpaceFree(board, corner):
+            if board.isSpaceFree(corner):
                 return corner
         # Move on one of the sides.
         return self.chooseRandomly([1, 3, 5, 7])
 
-
     def randomMove(self, board):
         # get all open spaces
-        possibleMoves = self.possibleNextMoves(board)
+        possibleMoves = board.possibleNextMoves()
         # pick a move randomly
         move = self.chooseRandomly(possibleMoves)
         # return the move chosen by the player
         return move
 
-
     def move(self, board):
         return self.fullMinimax(board, self.name)[0]
+        #return self.kindOfSmart(board)
+        #return self.randomMove(board)
 
 
-#Sets Up Game
+def switchPlayer(player, p1, p2):
+    """
+    Alternate between the two players
+    """
+    # if player one just went...
+    if (player is p1):
+        # switch to player two
+        return p2
+    # otherwise, player two just went...
+    else:
+        # so switch to player one
+        return p1
+
+
 def main():
     print("Welcome to Tic-Tac-Toe")
+    # create the player objects
     p1 = Player('X')
     p2 = Machine('O')
-    myBoard = Board(p1,p2)
-    myBoard.play()
+    # create the game board
+    myBoard = Board(p1, p2)
+    # start with player 1
+    player = p1
+    # loop until we get a win or a draw
+    while (True):
+        # display the board
+        myBoard.drawBoard()
+        # say which player goes next
+        print("Your move, " + player.name)
+        # get the player's move
+        move = player.move(myBoard)
+        # perform the player's move
+        myBoard.makeMove(player.name, move)
+        # if we have a winner...
+        if myBoard.isWinner(player.name):
+            # display the board
+            myBoard.drawBoard()
+            # say who won
+            print(player.name + " won!")
+            # break out of the loop
+            break
+        # if the board is full, then it's a draw
+        elif myBoard.isBoardFull():
+            # display the board
+            myBoard.drawBoard()
+            # say we have a tie
+            print('The game is a tie!')
+            # break out of the loop
+            break
+        # otherwise, switch players and repeat
+        else:
+            player = switchPlayer(player, p1, p2)
+
 
 if __name__ == "__main__":
     main()
