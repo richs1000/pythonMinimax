@@ -131,160 +131,6 @@ class Machine(Player):
         # call constructor for parent class
         Player.__init__(self, name)
 
-    def evaluationFunction(self, board):
-        """
-        This function is used by AlphaBeta pruning to evaluate a non-terminal state.
-        """
-        value = 0
-
-        return value
-
-    def atTerminalState(self, board, depth):
-        """
-        Checks to see if we've reached a terminal state. Terminal states are:
-           * somebody won
-           * we have a draw
-           * we've hit the depth limit on our search
-        Returns a tuple (<terminal>, <value>) where:
-           * <terminal> is True if we're at a terminal state, False if we're not
-           * <value> is the value of the terminal state
-        """
-        global DEPTHLIMIT
-        # Yay, we won!
-        if board.isWinner(self.name):
-            # Return a positive number
-            return (True, 10)
-        # Darn, we lost!
-        elif board.isWinner(self.opponent):
-            # Return a negative number
-            return (True, -10)
-        # if it's a draw,
-        elif (board.isBoardFull()):
-            # return the value 0
-            return (True, 0)
-        # if we've hit our depth limit
-        elif (depth >= DEPTHLIMIT):
-            # use the evaluation function to return a value for this state
-            return (True, self.evaluationFunction(board))
-        return (False, 0)
-
-    def partialMinimax(self, board, player, depth):
-        """
-        This function implements a minimax search that cuts off its search at a
-        specified depth
-        The function always returns a tuple: (<move>, <value>). <move> only matters
-        for the top node in the search tree, when the function is sending back which
-        move to make to the game.
-        """
-        print "depth = " + str(depth)
-        # are we at a terminal state?
-        terminalTuple = self.atTerminalState(board, depth)
-        if terminalTuple[0] == True:
-            return (0, terminalTuple[1])
-        # get all open spaces
-        possibleMoves = board.possibleNextMoves()
-        # are we considering our move or our opponent's move
-        if self.name == player:
-            # if it's our move, we want to find the move with the highest number, so start with low numbers
-            bestMove = -1
-            bestScore = -1000
-            # loop through all possible moves
-            for m in possibleMoves:
-                # make the move
-                board.makeMove(player, m)
-                # get the minimax vaue of the resulting state
-                minimax = self.partialMinimax(board, self.opponent, depth+1)
-                # is this move better than any other moves we found?
-                if bestScore < minimax[1]:
-                    # save the move...
-                    bestMove = m
-                    # and its score
-                    bestScore = minimax[1]
-                # undo the move
-                board.clearSquare(m)
-        else:
-        # if it's our opponent's move, we want to find a low number, so start with big numbers
-            bestMove = -1
-            bestScore = 1000
-            # consider all possible moves
-            for m in possibleMoves:
-                # make the move
-                board.makeMove(player, m)
-                # get the minimax vaue of the resulting state
-                minimax = self.partialMinimax(board, self.name, depth+1)
-                # is this better (for our opponent) than any other moves we found?
-                if bestScore > minimax[1]:
-                    # save the move...
-                    bestMove = m
-                    # and its score
-                    bestScore = minimax[1]
-                # undo the move
-                board.clearSquare(m)
-        # return the best move and best score we found for this state
-        return (bestMove, bestScore)
-
-    def fullMinimax(self, board, player):
-        """
-        This function implements a minimax search that always goes to the very end
-        of the search tree. Only useful for games that don't have big search trees.
-        The function always returns a tuple: (<move>, <value>). <move> only matters
-        for the top node in the search tree, when the function is sending back which
-        move to make to the game.
-        """
-        # Yay, we won!
-        if board.isWinner(self.name):
-            # Return a positive number
-            return (1, 1)
-        # Darn, we lost!
-        elif board.isWinner(self.opponent):
-            # Return a negative number
-            return (-1, -1)
-        # if it's a draw,
-        elif (board.isBoardFull()):
-            # return the value 0
-            return (0, 0)
-        # get all open spaces
-        possibleMoves = board.possibleNextMoves()
-        # are we considering our move or our opponent's move
-        if self.name == player:
-            # if it's our move, we want to find the move with the highest number, so start with low numbers
-            bestMove = -1
-            bestScore = -1000
-            # loop through all possible moves
-            for m in possibleMoves:
-                # make the move
-                board.makeMove(player, m)
-                # get the minimax vaue of the resulting state
-                minimax = self.fullMinimax(board, self.opponent)
-                # is this move better than any other moves we found?
-                if bestScore < minimax[1]:
-                    # save the move...
-                    bestMove = m
-                    # and its score
-                    bestScore = minimax[1]
-                # undo the move
-                board.clearSquare(m)
-        else:
-        # if it's our opponent's move, we want to find a low number, so start with big numbers
-            bestMove = -1
-            bestScore = 1000
-            # consider all possible moves
-            for m in possibleMoves:
-                # make the move
-                board.makeMove(player, m)
-                # get the minimax vaue of the resulting state
-                minimax = self.fullMinimax(board, self.name)
-                # is this better (for our opponent) than any other moves we found?
-                if bestScore > minimax[1]:
-                    # save the move...
-                    bestMove = m
-                    # and its score
-                    bestScore = minimax[1]
-                # undo the move
-                board.clearSquare(m)
-        # return the best move and best score we found for this state
-        return (bestMove, bestScore)
-
     def chooseRandomly(self, moves):
         """
         Given a list of potential moves, pick one at random and return it
@@ -293,34 +139,6 @@ class Machine(Player):
         moveIndex = random.randint(0, len(moves) - 1)
         # send it back
         return moves[moveIndex]
-
-    def kindOfSmart(self, board):
-        # get all open spaces
-        possibleMoves = board.possibleNextMoves()
-        # First, check if we can win in the next move
-        for i in possibleMoves:
-            board.makeMove(self.name, i)
-            if board.isWinner(self.name):
-                return i
-            else:
-                board.clearSquare(i)
-        # Check if the player could win on his next move, and block them.
-        for i in possibleMoves:
-            board.makeMove(self.opponent, i)
-            if board.isWinner(self.opponent):
-                return i
-            else:
-                board.clearSquare(i)
-        # Try to take the center, if it is free.
-        if board.isSpaceFree(4):
-            return 4
-        # Try to take one of the corners, if they are free.
-        corners = [0, 2, 6, 8]
-        for corner in corners:
-            if board.isSpaceFree(corner):
-                return corner
-        # Move on one of the sides.
-        return self.chooseRandomly([1, 3, 5, 7])
 
     def randomMove(self, board):
         # get all open spaces
@@ -572,7 +390,7 @@ def switchPlayer(player, p1, p2):
 def main():
     print("Welcome to Tic-Tac-Toe")
     # create the player objects
-    p1 = PartialMinimaxMachine('X')
+    p1 = Machine('X')
     p2 = FullMinimaxMachine('O')
     # create the game board
     myBoard = Board(p1, p2)
