@@ -11,11 +11,9 @@ class PartialMinimaxMachine(Machine):
 
     def evaluationFunction(self, board):
         """
-        This function is used by AlphaBeta pruning to evaluate a non-terminal state.
+        This function is used by minimax to evaluate a non-terminal state.
         """
-        value = 0
-
-        return value
+        return 0
 
     def atTerminalState(self, board, depth):
         """
@@ -54,9 +52,11 @@ class PartialMinimaxMachine(Machine):
         for the top node in the search tree, when the function is sending back which
         move to make to the game.
         """
-        # are we at a terminal state?
+        # check to see if we are at a terminal state - someone won, the board is full or we hit our search limit
         terminalTuple = self.atTerminalState(board, depth)
+        # if we are at a terminal state
         if terminalTuple[0] == True:
+            # return the value of this state
             return (0, terminalTuple[1])
         # get all open spaces
         possibleMoves = board.possibleNextMoves()

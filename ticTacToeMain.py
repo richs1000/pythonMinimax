@@ -8,8 +8,10 @@ from ticTacToePartialMinimax import *
 def main():
     print("Welcome to Tic-Tac-Toe")
     # create the player objects
-    p1 = PartialMinimaxMachine('X')
-    p2 = FullMinimaxMachine('O')
+    p2 = KindaSmartMachine('X')
+    p1 = FullMinimaxMachine('O')
+    #p2 = KindaSmartMachine('O')
+    #p2 = Machine('O')
     # create the game board
     myBoard = Board(p1, p2)
     # start with player 1

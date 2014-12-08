@@ -23,6 +23,7 @@ class KindaSmartMachine(Machine):
         for i in possibleMoves:
             board.makeMove(self.name, i)
             if board.isWinner(self.name):
+                board.clearSquare(i)
                 return i
             else:
                 board.clearSquare(i)
@@ -30,6 +31,7 @@ class KindaSmartMachine(Machine):
         for i in possibleMoves:
             board.makeMove(self.opponent, i)
             if board.isWinner(self.opponent):
+                board.clearSquare(i)
                 return i
             else:
                 board.clearSquare(i)
