@@ -1,6 +1,6 @@
 __author__ = 'rsimpson'
 
-from ticTacToeAlphaBeta import *
+from ticTacToeMachine import *
 
 DEPTHLIMIT = 2
 
@@ -13,6 +13,7 @@ class PartialMinimaxMachine(Machine):
         """
         This function is used by minimax to evaluate a non-terminal state.
         """
+        print "your code goes here"
         return 0
 
     def atTerminalState(self, board, depth):

@@ -1,6 +1,6 @@
 __author__ = 'rsimpson'
 
-from ticTacToeAlphaBeta import *
+from ticTacToeMachine import *
 
 class KindaSmartMachine(Machine):
     def __init__(self, name):
