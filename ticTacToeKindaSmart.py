@@ -7,15 +7,6 @@ class KindaSmartMachine(Machine):
         # call constructor for parent class
         Machine.__init__(self, name)
 
-    def chooseRandomly(self, moves):
-        """
-        Given a list of potential moves, pick one at random and return it
-        """
-        # pick a move randomly
-        moveIndex = random.randint(0, len(moves) - 1)
-        # send it back
-        return moves[moveIndex]
-
     def kindOfSmart(self, board):
         # get all open spaces
         possibleMoves = board.possibleNextMoves()
@@ -44,7 +35,10 @@ class KindaSmartMachine(Machine):
             if board.isSpaceFree(corner):
                 return corner
         # Move on one of the sides.
-        return self.chooseRandomly([1, 3, 5, 7])
+        sides = [1, 3, 5, 7]
+        for side in sides:
+            if board.isSpaceFree(side):
+                return side
 
     def move(self, board):
         return self.kindOfSmart(board)

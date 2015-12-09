@@ -1,12 +1,12 @@
 __author__ = 'rsimpson'
 
-from ticTacToePlayer import *
-from ticTacToeMachine import *
-from ticTacToeAlphaBeta import *
-from ticTacToeFullMinimax import *
+# from ticTacToePlayer import *
+# from ticTacToeMachine import *
+# from ticTacToeAlphaBeta import *
+# from ticTacToeFullMinimax import *
 from ticTacToeKindaSmart import *
 from ticTacToePartialMinimax import *
-from ticTacToeAlphaBeta import *
+#from ticTacToeAlphaBeta import *
 
 
 class Board(object):
@@ -114,7 +114,8 @@ def main():
     print("Welcome to Tic-Tac-Toe")
     # create the player objects
     p1 = Player('X')
-    p2 = AlphaBetaMachine('O')
+    #p2 = AlphaBetaMachine('O')
+    p2 = PartialMinimaxMachine('O')
     # create the game board
     myBoard = Board(p1, p2)
     # start with player 1
